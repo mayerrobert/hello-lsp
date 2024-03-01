@@ -53,16 +53,15 @@ public final class Lsp {
     public static void main(String[] args) throws Exception {
         if (args.length == 2 && "--log".equals(args[0]))
             log = new PrintWriter(Files.newOutputStream(Paths.get(args[1])), true, StandardCharsets.UTF_8);
-        else
-            log = new PrintWriter(System.err, true);
 
-        dbg("args: %s", String.join(", ", args));
-        dbg("session start%n", null);
+        if (log != null) dbg("args: %s", String.join(", ", args));
+        dbg("session start", null);
         try {
             Lsp.serve();
         }
         catch (Exception e) {
-            e.printStackTrace(log);
+            if (log != null) e.printStackTrace(log);
+            else e.printStackTrace(System.err);
         }
     }
 
@@ -70,7 +69,7 @@ public final class Lsp {
         final Reader inReader = new InputStreamReader(System.in, StandardCharsets.UTF_8);
         int id = -1;
         while (true) {
-            dbg("begin request **************************%n", null);
+            dbg("begin request **************************", null);
 
             final int contentLength = readHeader(inReader);
             final String body = readChars(inReader, contentLength);
@@ -92,7 +91,7 @@ public final class Lsp {
             case "textDocument/completion" -> completion(id);
             }
             
-            dbg("done request ***************************%n", null);
+            dbg("done request ***************************", null);
         }
     }
 
@@ -129,32 +128,34 @@ public final class Lsp {
      *  Lines must be terminated by "\r\n". */
     private static int readHeader(Reader inReader) throws IOException {
         final String next = nextLine(inReader);
-        dbg("received line '%s'%n", next);
+        dbg("received line '%s'", next);
         final Matcher matcher = HEADER.matcher(next);
         if (!matcher.find()) { throw new RuntimeException(CONTENT_LENGTH + " not found"); }
 
-        String ignore;
-        do {
-            ignore = nextLine(inReader);
-            if (ignore.isEmpty()) dbg("received empty line aka header ends", null);
+        while (true) {
+            final String ignore = nextLine(inReader);
+            if (ignore.isEmpty()) {
+                dbg("received empty line aka header ends", null);
+                break;
+            }
             else dbg("read and ignored line '%s'", ignore);
-        } while (!ignore.isEmpty());
+        }
 
         final int contentLength = Integer.parseInt(matcher.group(1));
-        dbg("parsed " + CONTENT_LENGTH + ": %d%n", contentLength);
+        dbg("parsed " + CONTENT_LENGTH + ": %d", contentLength);
         return contentLength;
     }
 
     /** send {@code body} prefixed with a "Content-Length" header */
     private static void respond(String body) {
         final String s = String.format(CONTENT_LENGTH + ": %d\r\n\r\n%s", body.length(), body);
-        dbg("sending esponse: '%s'%n", s);
+        dbg("sending esponse: '%s'", s);
         System.out.println(s);
     }
 
 
     private static void dbg(String fmt, Object arg) {
-        if (log != null) log.format(fmt + "%n", arg);
+        if (log != null) log.format(fmt + "%n%n", arg);
     }
 
     private static String nextLine(Reader in) throws IOException {
@@ -178,7 +179,7 @@ public final class Lsp {
         }
     }
 
-    private static String readChars(Reader reader, int n) throws Exception {
+    private static String readChars(Reader reader, int n) throws IOException {
         dbg("try to read %d chars", n);
         final StringBuilder ret = new StringBuilder();
         while (n > 0) {
