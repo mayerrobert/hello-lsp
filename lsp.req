@@ -1,0 +1,3 @@
+Content-length: 50
+
+{"jsonrpc":"2.0","id":"123","method":"initialize"}
