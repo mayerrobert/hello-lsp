@@ -23,6 +23,12 @@ Sample "request" for running the "LSP" on the commandline:
     
     {"jsonrpc":"2.0","id":123,"method":"initialize"}
 
+Do something like
+
+    java -cp json-20240205.jar src/main/java/Lsp.java --log hello.log < lsp.req
+
+to run the sample request and observe the log outputs.
+An EOFException at the end is expected.
 
 */
 
@@ -47,15 +53,16 @@ public final class Lsp {
     public static void main(String[] args) throws Exception {
         if (args.length == 2 && "--log".equals(args[0]))
             log = new PrintWriter(Files.newOutputStream(Paths.get(args[1])), true, StandardCharsets.UTF_8);
-        
+        else
+            log = new PrintWriter(System.err, true);
+
         dbg("args: %s", String.join(", ", args));
         dbg("session start%n", null);
         try {
             Lsp.serve();
         }
         catch (Exception e) {
-            if (log != null) e.printStackTrace(log);
-            else e.printStackTrace(System.err);
+            e.printStackTrace(log);
         }
     }
 
