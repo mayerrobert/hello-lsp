@@ -17,7 +17,7 @@ then do "M-x eglot RET lisp-mode RET"
 
 Sample "request" for running the "LSP" on the commandline:
 
-    Content-Length: 50
+    Content-Length: 48
     
     {"jsonrpc":"2.0","id":123,"method":"initialize"}
 
