@@ -10,7 +10,7 @@ eval in emacs:
       (add-to-list 'eglot-server-programs
                    '(lisp-mode . ("C:/robert.nobak/apps/Java/X64/jdk-19/bin/java"
                                   "-cp" "c:/robert/scripts/json-20240205.jar"
-                                  "c:/robert/simplelsp/src/main/java/Lsp.java"
+                                  "c:/robert/hello-lsp/src/main/java/Lsp.java"
                                   "--log" "c:/robert/lsp.log"
                                   ))))
 
@@ -19,9 +19,10 @@ then do "M-x eglot RET lisp-mode RET"
 
 Sample "request" for running the "LSP" on the commandline:
 
-Content-Length: 50
+    Content-Length: 50
+    
+    {"jsonrpc":"2.0","id":123,"method":"initialize"}
 
-{"jsonrpc":"2.0","id":123,"method":"initialize"}
 
 */
 
